@@ -1,3 +1,4 @@
 .crystal
 bc_flags
-*.o
+clock
+CID

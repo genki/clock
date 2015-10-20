@@ -1,27 +1,22 @@
-FROM alpine
+FROM ubuntu:14.04
 MAINTAINER Genki Takiuchi <genki@s21g.com>
 
-RUN apk add --update g++ make libevent-dev pcre-dev gc-dev \
-	&& rm -rf /var/cache/apk/*
-
-WORKDIR /usr/local/src
-RUN wget http://www.xmailserver.org/pcl-1.12.tar.gz
-RUN tar xzf pcl-1.12.tar.gz
-WORKDIR pcl-1.12
-RUN ./configure --prefix=/usr
-RUN make
-RUN make install
+RUN \
+	apt-key adv --keyserver keys.gnupg.net --recv-keys 09617FD37CC06B54 && \
+	echo "deb http://dist.crystal-lang.org/apt crystal main" > \
+		/etc/apt/sources.list.d/crystal.list && \
+	apt-get update && \
+	apt-get install -y crystal gcc pkg-config libssl-dev && \
+	apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN mkdir -p /usr/local/src/clock
 WORKDIR /usr/local/src/clock
-COPY clock.o ./
-COPY errno.c ./
-RUN gcc -c errno.c -o errno.o
-RUN gcc errno.o clock.o -o /clock \
-	-rdynamic -levent -lc -lrt -lpcl -lpcre -lgc -lpthread -ldl
-
+COPY ./clock.cr ./
+RUN crystal build --release --single-module clock.cr
+RUN mv clock /usr/bin
+WORKDIR /
 RUN rm -rf /usr/local/src/*
-RUN apk del g++ make && rm -rf /var/cache/apk/*
 
-ENTRYPOINT ["/clock"]
+ONBUILD COPY ./alerm /etc/alerm
+ENTRYPOINT ["clock"]
 CMD ["/etc/alerm"]

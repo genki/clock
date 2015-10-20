@@ -1,1 +1,1 @@
-__thread int errno;
+__thread int errno = 0;

@@ -54,11 +54,12 @@ class Clock
 
   def initialize(alerm)
     @alerms = [] of Alerm
-    File.open(alerm) do |file|
-      file.read.split("\n").each do |line|
-        m,h,day,mon,w,cmd = line.split /\s+/, 6
-        @alerms << Alerm.new m, h, day, mon, w, cmd
-      end
+    file = File.read alerm
+    file.split("\n").each do |line|
+      next if line.empty?
+      next if line[0] == '#'
+      m,h,day,mon,w,cmd = line.split /\s+/, 6
+      @alerms << Alerm.new m, h, day, mon, w, cmd
     end
   end
 
