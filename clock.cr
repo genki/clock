@@ -46,7 +46,11 @@ class Clock
         match = @items[:{{what.id}}].match values, match
         return if match == -1
       {% end %}
-      system @cmd if match == 1
+      if match == 1
+        STDOUT.puts Dir.working_directory
+        STDOUT.puts "execute: #{@cmd}"
+        system @cmd
+      end
     rescue e : Exception
       STDERR.puts e
     end
@@ -84,4 +88,8 @@ end
 
 [STDOUT, STDERR].each{|i| i.sync = true}
 abort "first argument should be a path to alerm file" if ARGV.empty?
+Signal::TERM.trap do
+  STDOUT.puts "clock is terminated."
+  exit
+end
 Clock.new(ARGV[0]).start
