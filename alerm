@@ -1,0 +1,2 @@
+*/1 * * * * echo every min
+*/2 * * * * echo every 2 min
