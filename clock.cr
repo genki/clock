@@ -47,7 +47,6 @@ class Clock
         return if match == -1
       {% end %}
       if match == 1
-        STDOUT.puts Dir.working_directory
         STDOUT.puts "execute: #{@cmd}"
         system @cmd
       end
