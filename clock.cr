@@ -1,4 +1,17 @@
 class Clock
+  class DetachedProcess < Process
+    def self.run cmd
+      new cmd, nil, shell: true, input: true, output: true, error: true
+    end
+
+    def wait_nonblock
+      if @waitpid_future.completed?
+        wait
+        yield
+      end
+    end
+  end
+
   class Alerm
     class Item
       def initialize(value, @range)
@@ -25,7 +38,7 @@ class Clock
       :day => 1..31, :month => 1..12, :day_of_week => 0...7,
     }
 
-    def initialize(minute, hour, day, month, day_of_week, @cmd)
+    def initialize(minute, hour, day, month, day_of_week, @cmd, @pset)
       @items = {} of Symbol => Item
       {% for what in [:minute, :hour, :day, :month, :day_of_week] %}
         @items[:{{what.id}}] = Item.new {{what.id}}, RANGES[:{{what.id}}]
@@ -47,8 +60,8 @@ class Clock
         return if match == -1
       {% end %}
       if match == 1
-        STDOUT.puts "execute: #{@cmd}"
-        system @cmd
+        STDOUT.puts "#{now}: #{@cmd}"
+        @pset.add DetachedProcess.run @cmd
       end
     rescue e : Exception
       STDERR.puts e
@@ -57,12 +70,13 @@ class Clock
 
   def initialize(alerm)
     @alerms = [] of Alerm
+    @pset = Set(DetachedProcess).new
     file = File.read alerm
     file.split("\n").each do |line|
       next if line.empty?
       next if line[0] == '#'
       m,h,day,mon,w,cmd = line.split /\s+/, 6
-      @alerms << Alerm.new m, h, day, mon, w, cmd
+      @alerms << Alerm.new m, h, day, mon, w, cmd, @pset
     end
   end
 
@@ -76,7 +90,14 @@ class Clock
       else now += Time::Span.new(0, 0, 60 - now.second)
       end
       @alerms.each{|a| a.tick last, now}
+      @pset.each do |p|
+        p.wait_nonblock do
+          @pset.delete p
+        end
+      end
     end
+  ensure
+    @pset.each{|p| p.wait}
   end
 
   def wait_for_next_min
