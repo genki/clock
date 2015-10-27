@@ -1,5 +1,9 @@
 class Clock
   class DetachedProcess < Process
+    def self.run cmd
+      new cmd, nil, shell: true, input: true, output: true, error: true
+    end
+
     def wait_nonblock
       if @waitpid_future.completed?
         wait
@@ -24,7 +28,7 @@ class Clock
         if @match.empty?
           (matching == 1) ? 1 : values.includes?(@range.begin) ? 1 : 0
         elsif (@match & values).size > 0; 1
-        else matching == 0 ? 0 : -1
+        else -1
         end
       end
     end
@@ -58,7 +62,7 @@ class Clock
       if match == 1
         STDOUT.puts "#{now}: #{@cmd}"
         STDOUT.flush
-        @pset.add DetachedProcess.new @cmd
+        @pset.add DetachedProcess.run @cmd
       end
     rescue e : Exception
       STDERR.puts e

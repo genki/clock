@@ -1,3 +1,6 @@
 */1 * * * * echo every min
 */2 * * * * echo every 2 min
 */1 * * * * sleep 70
+13 3 * * * echo foo
+40 3 * * * echo bar
+*/5 3 * * * echo baz
