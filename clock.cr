@@ -1,6 +1,6 @@
 class Clock
   class DetachedProcess < Process
-    def self.run cmd
+    def self.run(cmd)
       new cmd, nil, shell: true, input: true, output: true, error: true
     end
 
