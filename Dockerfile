@@ -1,5 +1,4 @@
-FROM ubuntu:14.04
-MAINTAINER Genki Takiuchi <genki@s21g.com>
+FROM ubuntu:16.04
 
 RUN \
 	apt-key adv --keyserver keys.gnupg.net --recv-keys 09617FD37CC06B54 && \

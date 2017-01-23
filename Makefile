@@ -7,4 +7,4 @@ docker: Dockerfile
 		| sed -E "s/^Successfully built //" > CID
 
 run: 
-	docker run --name clock-dev -v /tmp/alerm:/etc/alerm --rm `cat CID`
+	docker run --name clock-dev -e TZ=Asia/Tokyo -v $(PWD)/alerm:/etc/alerm --rm `cat CID`

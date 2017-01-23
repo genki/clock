@@ -13,7 +13,10 @@ class Clock
   end
 
   class Alerm
+    @cmd: String
+    @pset: Set(DetachedProcess)
     class Item
+      @range: Range(Int32, Int32)
       def initialize(value, @range)
         case value
         when /^\*$/; @match = [] of Int32
